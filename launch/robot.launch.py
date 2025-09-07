@@ -1,7 +1,7 @@
 import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, TimerAction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
@@ -210,7 +210,8 @@ def generate_launch_description():
             'cleanup_timeout': 5.0,
             'deactivate_timeout': 5.0,
             'shutdown_timeout': 5.0
-        }]
+        }],
+        arguments=['--wait', '5000']
     )
 
     ld = LaunchDescription()
@@ -219,12 +220,17 @@ def generate_launch_description():
     ld.add_action(node_robot_state_publisher)
     ld.add_action(steering_node)  
     ld.add_action(node_twist_mux)
-    ld.add_action(node_twist_stamper)
     ld.add_action(node_rplidar_drive)
     ld.add_action(slam_toolbox)  
     ld.add_action(nav2_launch)  
 
 
-    ld.add_action(lifecycle_manager) 
+    ld.add_action(lifecycle_manager)
+
+    ld.add_action(TimerAction(
+        period=5.0,
+        actions=[nav2_launch, lifecycle_manager]
+    ))
+ 
 
     return ld
