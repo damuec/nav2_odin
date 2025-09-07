@@ -116,18 +116,6 @@ def generate_launch_description():
         ],
     )
 
-    # Twist stamper node
-    node_twist_stamper = Node(
-        package='twist_stamper',
-        executable='twist_stamper',
-        name='twist_stamper',
-        output='screen',
-        remappings=[
-            ('cmd_vel_in', 'cmd_vel_smoothed'),
-            ('cmd_vel_out', 'nav_vel'),
-        ],
-    )
-
     # RPLIDAR launch include
     node_rplidar_drive = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
@@ -210,8 +198,7 @@ def generate_launch_description():
             'cleanup_timeout': 5.0,
             'deactivate_timeout': 5.0,
             'shutdown_timeout': 5.0
-        }],
-        arguments=['--wait', '5000']
+        }]
     )
 
     ld = LaunchDescription()
@@ -221,16 +208,12 @@ def generate_launch_description():
     ld.add_action(steering_node)  
     ld.add_action(node_twist_mux)
     ld.add_action(node_rplidar_drive)
-    ld.add_action(slam_toolbox)  
-    ld.add_action(nav2_launch)  
-
-
-    ld.add_action(lifecycle_manager)
-
+    ld.add_action(slam_toolbox)
+    
+    # Add a timer action to delay the navigation stack
     ld.add_action(TimerAction(
-        period=5.0,
+        period=5.0,  # Wait 5 seconds after SLAM starts
         actions=[nav2_launch, lifecycle_manager]
     ))
- 
 
     return ld
