@@ -150,9 +150,12 @@ def generate_launch_description():
         'minimum_travel_distance': 0.1,  # Reduced from 0.5
         'minimum_travel_heading': 0.1,   # Reduced from 0.5
         'do_loop_closing': True,
-        'loop_search_maximum_distance': 3.0
+        'loop_search_maximum_distance': 3.0,
+        'throttle_scans': 2,  # Process every 2nd scan
+        'transform_publish_period': 0.05,  # Reduce from 0.02
+        'queue_size': 10,  # Increase queue size
     }]
-)
+    )
     
     # Nav2 launch with autostart disabled
     nav2_launch = IncludeLaunchDescription(
