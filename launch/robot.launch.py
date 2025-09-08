@@ -137,23 +137,26 @@ def generate_launch_description():
         executable='async_slam_toolbox_node',
         name='slam_toolbox',
         output='screen',
-        parameters=[{
-            'use_sim_time': False,  
-            'odom_frame': 'odom',
-            'map_frame': 'map', 
-            'base_frame': 'base_footprint',
-            'scan_topic': '/scan',
-            'mode': 'mapping',  
-            'resolution': 0.05,
-            'max_laser_range': 10.0,
-            'transform_timeout': 0.2,
-            'map_update_interval': 5.0,
-            'minimum_travel_distance': 0.5,
-            'minimum_travel_heading': 0.5,
-            'do_loop_closing': True,
-            'loop_search_maximum_distance': 3.0
-        }]
-    )
+    parameters=[{
+        'use_sim_time': False,
+        'odom_frame': 'odom',
+        'map_frame': 'map',
+        'base_frame': 'base_footprint',
+        'scan_topic': '/scan',
+        'mode': 'mapping',
+        'throttle_scans': 3,
+        'transform_publish_period': 0.05,  # Reduced from 0.02
+        'map_update_interval': 2.0,        # Reduced update frequency
+        'scan_buffer_size': 5,             # Reduced buffer size
+        'resolution': 0.05,
+        'max_laser_range': 10.0,
+        'transform_timeout': 0.2,
+        'minimum_travel_distance': 0.5,
+        'minimum_travel_heading': 0.5,
+        'do_loop_closing': True,
+        'loop_search_maximum_distance': 3.0
+    }]
+)
 
     # Nav2 launch with autostart disabled
     nav2_launch = IncludeLaunchDescription(
