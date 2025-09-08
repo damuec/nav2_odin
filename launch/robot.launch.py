@@ -200,18 +200,10 @@ def generate_launch_description():
         }]
     )
 
-    static_tf = Node(
-    package='tf2_ros',
-    executable='static_transform_publisher',
-    arguments=['0', '0', '0', '0', '0', '0', 'map', 'odom'],
-    name='static_map_odom_tf'
-)
-
     ld = LaunchDescription()
     ld.add_action(declare_use_sim_time)
     ld.add_action(declare_lidar_serial_port)
     ld.add_action(node_robot_state_publisher)
-    ld.add_action(static_tf)
     ld.add_action(steering_node)  
     ld.add_action(node_twist_mux)
     ld.add_action(node_rplidar_drive)
