@@ -131,33 +131,29 @@ def generate_launch_description():
         }.items()
     )
 
-    # SLAM Toolbox node (for creating map on-the-fly)
     slam_toolbox = Node(
-        package='slam_toolbox',
-        executable='async_slam_toolbox_node',
-        name='slam_toolbox',
-        output='screen',
+    package='slam_toolbox',
+    executable='async_slam_toolbox_node',
+    name='slam_toolbox',
+    output='screen',
     parameters=[{
-        'use_sim_time': False,
+        'use_sim_time': False,  
         'odom_frame': 'odom',
-        'map_frame': 'map',
+        'map_frame': 'map', 
         'base_frame': 'base_footprint',
         'scan_topic': '/scan',
-        'mode': 'mapping',
-        'throttle_scans': 3,
-        'transform_publish_period': 0.05,  # Reduced from 0.02
-        'map_update_interval': 2.0,        # Reduced update frequency
-        'scan_buffer_size': 5,             # Reduced buffer size
+        'mode': 'mapping',  
         'resolution': 0.05,
         'max_laser_range': 10.0,
-        'transform_timeout': 0.2,
-        'minimum_travel_distance': 0.5,
-        'minimum_travel_heading': 0.5,
+        'transform_timeout': 1.0,  # Increased from 0.2
+        'map_update_interval': 2.0,  # Reduced from 5.0
+        'minimum_travel_distance': 0.1,  # Reduced from 0.5
+        'minimum_travel_heading': 0.1,   # Reduced from 0.5
         'do_loop_closing': True,
         'loop_search_maximum_distance': 3.0
     }]
 )
-
+    
     # Nav2 launch with autostart disabled
     nav2_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -204,10 +200,18 @@ def generate_launch_description():
         }]
     )
 
+    static_tf = Node(
+    package='tf2_ros',
+    executable='static_transform_publisher',
+    arguments=['0', '0', '0', '0', '0', '0', 'map', 'odom'],
+    name='static_map_odom_tf'
+)
+
     ld = LaunchDescription()
     ld.add_action(declare_use_sim_time)
     ld.add_action(declare_lidar_serial_port)
     ld.add_action(node_robot_state_publisher)
+    ld.add_action(static_tf)
     ld.add_action(steering_node)  
     ld.add_action(node_twist_mux)
     ld.add_action(node_rplidar_drive)
