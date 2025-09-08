@@ -132,29 +132,11 @@ def generate_launch_description():
     )
 
     slam_toolbox = Node(
-    package='slam_toolbox',
-    executable='async_slam_toolbox_node',
-    name='slam_toolbox',
-    output='screen',
-    parameters=[{
-        'use_sim_time': False,  
-        'odom_frame': 'odom',
-        'map_frame': 'map', 
-        'base_frame': 'base_footprint',
-        'scan_topic': '/scan',
-        'mode': 'mapping',  
-        'resolution': 0.05,
-        'max_laser_range': 10.0,
-        'transform_timeout': 1.0,  # Increased from 0.2
-        'map_update_interval': 2.0,  # Reduced from 5.0
-        'minimum_travel_distance': 0.1,  # Reduced from 0.5
-        'minimum_travel_heading': 0.1,   # Reduced from 0.5
-        'do_loop_closing': True,
-        'loop_search_maximum_distance': 3.0,
-        'throttle_scans': 2,  # Process every 2nd scan
-        'transform_publish_period': 0.05,  # Reduce from 0.02
-        'queue_size': 10,  # Increase queue size
-    }]
+        package='slam_toolbox',
+        executable='async_slam_toolbox_node',
+        name='slam_toolbox',
+        output='screen',
+        parameters=[slam_params_file, {'use_sim_time': use_sim_time}]
     )
     
     # Nav2 launch with autostart disabled
@@ -203,6 +185,21 @@ def generate_launch_description():
         }]
     )
 
+    tf_debug1 = Node(
+    package='tf2_ros',
+    executable='tf2_echo',
+    arguments=['map', 'base_footprint'],
+    name='tf_debug_map_base'
+)
+
+    tf_debug2 = Node(
+    package='tf2_ros',
+    executable='tf2_echo',
+    arguments=['odom', 'base_footprint'],
+    name='tf_debug_odom_base'
+)
+
+
     ld = LaunchDescription()
     ld.add_action(declare_use_sim_time)
     ld.add_action(declare_lidar_serial_port)
@@ -211,11 +208,11 @@ def generate_launch_description():
     ld.add_action(node_twist_mux)
     ld.add_action(node_rplidar_drive)
     ld.add_action(slam_toolbox)
-    
-    # Add a timer action to delay the navigation stack
     ld.add_action(TimerAction(
         period=5.0,  # Wait 5 seconds after SLAM starts
         actions=[nav2_launch, lifecycle_manager]
     ))
+    ld.add_action(tf_debug1)
+    ld.add_action(tf_debug2)
 
     return ld
