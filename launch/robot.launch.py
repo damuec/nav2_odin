@@ -209,7 +209,7 @@ def generate_launch_description():
     ld.add_action(node_rplidar_drive)
     ld.add_action(slam_toolbox)
     ld.add_action(TimerAction(
-        period=5.0,  # Wait 5 seconds after SLAM starts
+        period=15.0,  # Wait 15 seconds after SLAM starts
         actions=[nav2_launch, lifecycle_manager]
     ))
     ld.add_action(tf_debug1)
