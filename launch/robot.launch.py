@@ -58,7 +58,7 @@ def generate_launch_description():
     slam_params_file = os.path.join(
         package_dir,
         'config',
-        'slam_toolbox_params.yaml'
+        'mapper_params_online_async.yaml'
     )
 
     # robot_state_publisher setup
