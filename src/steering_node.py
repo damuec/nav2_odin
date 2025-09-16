@@ -16,20 +16,20 @@ class SteeringNode(Node):
         self.declare_parameter('timeout', 0.1)
         self.declare_parameter('command_timeout', 1.0)  # Fixed: 1.0 instead of 1,0
         
-        # Get parameters
+        #  parameters
         serial_port = self.get_parameter('serial_port').value
         baud_rate = self.get_parameter('baud_rate').value
         timeout = self.get_parameter('timeout').value
         self.command_timeout = self.get_parameter('command_timeout').value
         
-        # Initialize serial connection
+        # serial connection
         self.serial_conn = None
         self.serial_port = serial_port
         self.baud_rate = baud_rate
         self.timeout = timeout
         self.connect_serial()
         
-        # Create subscription to nav_vel
+        #  subscription to nav_vel
         self.subscription = self.create_subscription(
             Twist,
             'nav_vel',
@@ -38,10 +38,10 @@ class SteeringNode(Node):
         
         self.get_logger().info('Subscribed to nav_vel topic')
         
-        # Initialize last command time
+        #  last command time
         self.last_command_time = self.get_clock().now().nanoseconds / 1e9
         
-        # Create timer for safety check
+        # timer for safety check
         self.timer = self.create_timer(0.1, self.safety_check)
         
         self.get_logger().info('Steering node initialized')
@@ -108,6 +108,7 @@ class SteeringNode(Node):
                     response = self.serial_conn.readline().decode().strip()
                     if response.startswith('OK:'):
                         self.get_logger().debug(f'ESP32 response: {response}')
+                        self.get_logger().info(f"Converted - Throttle: {throttle}, Steering: {steering}")
         except (serial.SerialException, OSError) as e:
             self.get_logger().error(f'Serial communication error: {str(e)}')
             self.reconnect_serial()
