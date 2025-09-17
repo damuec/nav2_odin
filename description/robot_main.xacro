@@ -12,6 +12,21 @@
         <origin xyz="0 0 0.1" rpy="0 0 0"/>
     </joint>
 
+    <link name="odom"/>
+    <link name="map"/>
+
+    <joint name="map_to_odom" type="continuous">
+    <parent link="map"/>
+    <child link="odom"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+
+    <joint name="odom_to_base_footprint" type="continuous">
+    <parent link="odom"/>
+    <child link="base_footprint"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+
     <material name="blue">
         <color rgba="0 0 1 1"/>
     </material>
