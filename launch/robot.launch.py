@@ -126,12 +126,7 @@ def generate_launch_description():
             'map_frame': 'map',
             'base_frame': 'base_footprint',
             'scan_topic': '/scan'
-        }],
-        remappings=[
-            ('/scan', '/scan'),
-            ('/tf', 'tf'),
-            ('/tf_static', 'tf_static')
-        ]
+        }]
     )
     
     # Nav2 launch with autostart disabled
@@ -170,8 +165,8 @@ def generate_launch_description():
                 'velocity_smoother',
                 'collision_monitor'
             ],
-            'bond_timeout': 20.0,
-            'configure_timeout': 120.0,
+            'bond_timeout': 60.0,
+            'configure_timeout': 240.0,
             'activate_timeout': 120.0,
             'cleanup_timeout': 5.0,
             'deactivate_timeout': 5.0,

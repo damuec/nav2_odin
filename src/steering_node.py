@@ -48,8 +48,8 @@ class SteeringNode(Node):
 
     def connect_serial(self):
         """Connect to ESP32 serial port with retry mechanism"""
-        max_retries = 10
-        retry_delay = 2  # second
+        max_retries = 20
+        retry_delay = 1  # second
         
         for attempt in range(max_retries):
             try:
