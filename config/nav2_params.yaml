@@ -163,6 +163,7 @@ controller_server:
     local_costmap:
       ros__parameters:
         update_frequency: 2.0
+        transform_timeout: 2.0  # Increased timeout
         publish_frequency: 2.0
         global_frame: map
         robot_base_frame: "base_footprint"
@@ -205,6 +206,7 @@ global_costmap:
   ros__parameters:
     update_frequency: 0.5
     publish_frequency: 1.0
+    transform_timeout: 2.0  # Increased timeout
     global_frame: map
     robot_base_frame: "base_footprint"
     robot_radius: 0.22

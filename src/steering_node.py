@@ -47,30 +47,36 @@ class SteeringNode(Node):
         self.get_logger().info('Steering node initialized')
 
     def connect_serial(self):
-        """Connect to ESP32 serial port with retry mechanism"""
-        max_retries = 20
-        retry_delay = 1  # second
+        max_retries = 30  # Increased retries
+        retry_delay = 1   # Reduced delay
         
         for attempt in range(max_retries):
             try:
+                # Close existing connection if any
+                if self.serial_conn:
+                    try:
+                        self.serial_conn.close()
+                    except:
+                        pass
+                    
                 self.serial_conn = serial.Serial(
                     port=self.serial_port,
                     baudrate=self.baud_rate,
                     timeout=self.timeout,
                     write_timeout=self.timeout
                 )
+                
+                # Clear buffers
+                self.serial_conn.reset_input_buffer()
+                self.serial_conn.reset_output_buffer()
+                
                 self.get_logger().info(f'Connected to ESP32 on {self.serial_port}')
                 
                 # Wait for ESP32 to be ready
-                time.sleep(2)
-                
-                # Read initial message
-                if self.serial_conn.in_waiting > 0:
-                    initial_msg = self.serial_conn.readline().decode().strip()
-                    self.get_logger().info(f'ESP32 says: {initial_msg}')
+                time.sleep(1)
                 
                 return
-                
+                    
             except (serial.SerialException, OSError) as e:
                 self.get_logger().warn(
                     f'Attempt {attempt + 1}/{max_retries}: '

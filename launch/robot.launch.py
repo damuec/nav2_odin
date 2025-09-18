@@ -60,15 +60,6 @@ def generate_launch_description():
         parameters=[params]
     )
 
-    # Static transform for lidar (if not already in URDF)
-    static_tf_node = Node(
-        package='tf2_ros',
-        executable='static_transform_publisher',
-        name='static_transform_publisher',
-        output='screen',
-        arguments=['0.23', '0', '0.098', '0', '0', '0', 'base_link', 'lidar_frame']
-    )
-
     # Ackermann steering node
     steering_node = Node(
         package='nav2_odin',
@@ -113,7 +104,6 @@ def generate_launch_description():
         }.items()
     )
 
-    # SLAM Toolbox with LiDAR odometry configuration
     slam_toolbox = Node(
         package='slam_toolbox',
         executable='async_slam_toolbox_node',
@@ -193,13 +183,12 @@ def generate_launch_description():
     ld.add_action(declare_use_sim_time)
     ld.add_action(declare_lidar_serial_port)
     ld.add_action(node_robot_state_publisher)
-    ld.add_action(static_tf_node)  # Added static transform for lidar
     ld.add_action(steering_node)
     ld.add_action(node_twist_mux)
     ld.add_action(node_rplidar_drive)
     ld.add_action(slam_toolbox)
     ld.add_action(TimerAction(
-        period=10.0,  
+        period=15.0,  
         actions=[nav2_launch, lifecycle_manager]
     ))
     ld.add_action(tf_debug1)
