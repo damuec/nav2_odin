@@ -7,21 +7,6 @@ from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
 from launch.substitutions import LaunchConfiguration, Command
 
-# Image Transport Republisher factory function
-def image_transport_republisher(transport, camera_topics):
-    base_topic = camera_topics.split('/')[-1]
-
-    return Node(
-        package='image_transport',
-        executable='republish',
-        name=f'image_transport_republish_{transport}_{base_topic}',
-        arguments=['raw', transport],
-        remappings=[
-            ('in', f'/camera/{camera_topics}'),
-            (f'out/{transport}', f'/camera/{camera_topics}/{transport}'),
-        ],
-    )
-
 def generate_launch_description():
     package_name = 'nav2_odin'
     package_dir = get_package_share_directory(package_name) 
@@ -44,11 +29,6 @@ def generate_launch_description():
         package_dir,
         'description',
         'robot.urdf.xacro'
-    )
-    rviz_config_file_dir = os.path.join(
-        package_dir, 
-        'config', 
-        'minibot_config.rviz'
     )
     twist_mux_params_file = os.path.join(
         package_dir, 
@@ -80,12 +60,14 @@ def generate_launch_description():
         parameters=[params]
     )
 
-    # Image Transport Republishers Nodes
-    camera = 'image_raw'
-    depth_camera = 'depth/image_raw'
-    image_transports = ['compressed', 'compressedDepth', 'theora', 'zstd']  
-    node_image_republishers = [image_transport_republisher(transport, depth_camera) 
-                              for transport in image_transports]
+    # Static transform for lidar (if not already in URDF)
+    static_tf_node = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='static_transform_publisher',
+        output='screen',
+        arguments=['0.23', '0', '0.098', '0', '0', '0', 'base_link', 'lidar_frame']
+    )
 
     # Ackermann steering node
     steering_node = Node(
@@ -101,7 +83,7 @@ def generate_launch_description():
         }]
     )
 
-    # Twist mux node (updated to send commands directly to cmd_vel)
+    # Twist mux node
     node_twist_mux = Node(
         package='twist_mux',
         executable='twist_mux',
@@ -131,12 +113,25 @@ def generate_launch_description():
         }.items()
     )
 
+    # SLAM Toolbox with LiDAR odometry configuration
     slam_toolbox = Node(
         package='slam_toolbox',
         executable='async_slam_toolbox_node',
         name='slam_toolbox',
         output='screen',
-        parameters=[slam_params_file, {'use_sim_time': use_sim_time}]
+        parameters=[slam_params_file, {
+            'use_sim_time': use_sim_time,
+            'publish_odom': True,
+            'odom_frame': 'odom',
+            'map_frame': 'map',
+            'base_frame': 'base_footprint',
+            'scan_topic': '/scan'
+        }],
+        remappings=[
+            ('/scan', '/scan'),
+            ('/tf', 'tf'),
+            ('/tf_static', 'tf_static')
+        ]
     )
     
     # Nav2 launch with autostart disabled
@@ -151,7 +146,7 @@ def generate_launch_description():
         launch_arguments={
             'params_file': os.path.join(package_dir, 'config', 'nav2_params.yaml'),
             'use_sim_time': use_sim_time,
-            'autostart': 'false'  # Set to false to use our own lifecycle manager
+            'autostart': 'false'
         }.items()
     )
 
@@ -173,8 +168,7 @@ def generate_launch_description():
                 'bt_navigator',
                 'waypoint_follower',
                 'velocity_smoother',
-                'collision_monitor',
-                'docking_server'
+                'collision_monitor'
             ],
             'bond_timeout': 20.0,
             'configure_timeout': 120.0,
@@ -185,31 +179,32 @@ def generate_launch_description():
         }]
     )
 
+    # TF debug nodes
     tf_debug1 = Node(
-    package='tf2_ros',
-    executable='tf2_echo',
-    arguments=['map', 'base_footprint'],
-    name='tf_debug_map_base'
-)
+        package='tf2_ros',
+        executable='tf2_echo',
+        arguments=['map', 'base_footprint'],
+        name='tf_debug_map_base'
+    )
 
     tf_debug2 = Node(
-    package='tf2_ros',
-    executable='tf2_echo',
-    arguments=['odom', 'base_footprint'],
-    name='tf_debug_odom_base'
-)
-
+        package='tf2_ros',
+        executable='tf2_echo',
+        arguments=['odom', 'base_footprint'],
+        name='tf_debug_odom_base'
+    )
 
     ld = LaunchDescription()
     ld.add_action(declare_use_sim_time)
     ld.add_action(declare_lidar_serial_port)
     ld.add_action(node_robot_state_publisher)
-    ld.add_action(steering_node)  
+    ld.add_action(static_tf_node)  # Added static transform for lidar
+    ld.add_action(steering_node)
     ld.add_action(node_twist_mux)
     ld.add_action(node_rplidar_drive)
     ld.add_action(slam_toolbox)
     ld.add_action(TimerAction(
-            period=10.0,  
+        period=10.0,  
         actions=[nav2_launch, lifecycle_manager]
     ))
     ld.add_action(tf_debug1)
